@@ -4,7 +4,7 @@ set -euo pipefail
 NOTES_DIR=".notes/db"
 
 usage() {
-  echo "Usage: note add <text>" >&2
+  echo "Usage: note add <text> | note list" >&2
   exit 1
 }
 
@@ -25,6 +25,18 @@ cmd_add() {
   echo "$hash"
 }
 
+cmd_list() {
+  if [[ ! -d "$NOTES_DIR" ]]; then
+    return 0
+  fi
+  local file hash
+  for file in "$NOTES_DIR"/*; do
+    [[ -e "$file" ]] || continue
+    hash="$(basename "$file")"
+    printf '%s\t%s\n' "$hash" "$(cat "$file")"
+  done
+}
+
 main() {
   [[ $# -ge 1 ]] || usage
 
@@ -32,6 +44,9 @@ main() {
     add)
       shift
       cmd_add "$@"
+      ;;
+    list)
+      cmd_list
       ;;
     *)
       usage
