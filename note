@@ -2,3 +2,41 @@
 set -euo pipefail
 
 NOTES_DIR=".notes/db"
+
+usage() {
+  echo "Usage: note add <text>" >&2
+  exit 1
+}
+
+hash_content() {
+  printf '%s' "$1" | shasum -a 256 | awk '{print $1}'
+}
+
+cmd_add() {
+  if [[ $# -eq 0 ]]; then
+    echo "error: note text required" >&2
+    exit 1
+  fi
+  local text="$*"
+  local hash
+  hash="$(hash_content "$text")"
+  mkdir -p "$NOTES_DIR"
+  printf '%s' "$text" >"$NOTES_DIR/$hash"
+  echo "$hash"
+}
+
+main() {
+  [[ $# -ge 1 ]] || usage
+
+  case "$1" in
+    add)
+      shift
+      cmd_add "$@"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+}
+
+main "$@"
