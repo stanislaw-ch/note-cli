@@ -4,7 +4,7 @@ set -euo pipefail
 NOTES_DIR=".notes/db"
 
 usage() {
-  echo "Usage: note add <text> | note list" >&2
+  echo "Usage: note add <text> | note list | note delete <hash>" >&2
   exit 1
 }
 
@@ -25,6 +25,19 @@ cmd_add() {
   echo "$hash"
 }
 
+cmd_delete() {
+  if [[ $# -eq 0 ]]; then
+    echo "error: hash required" >&2
+    exit 1
+  fi
+  local hash="$1"
+  local path="$NOTES_DIR/$hash"
+  if [[ ! -f "$path" ]]; then
+    echo "error: no note with hash $hash" >&2
+    exit 1
+  fi
+  rm "$path"
+  
 cmd_list() {
   if [[ ! -d "$NOTES_DIR" ]]; then
     return 0
@@ -45,6 +58,11 @@ main() {
       shift
       cmd_add "$@"
       ;;
+      
+    delete)
+      shift
+      cmd_delete "$@"
+      
     list)
       cmd_list
       ;;
